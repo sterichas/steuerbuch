@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Steuerbuch Steri.Chas</title>
+<meta name="theme-color" content="#D7E8E6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Steuerbuch">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACJklEQVR42u3dMU5CQRCA4QVMaA0N99KGM+gZrDyDnIGr2RBbOwsbChPiS97szO73XQBC/sw+HjBsds9PDf6y9RIgDsSBOBAH4kAciANxIA7EAeJAHIgDcSAOxIE4EAfiQBwgDsSBOBAH4kAciANxIA7EAeJAHIgDcSAOxIE4EAfiQByIA8SBOBAH4kAc5PIQ/HhfHy9FX6nj2yXD0/i+XsecHHXLaK19vp8yPI394RD2WJuYf2oqncW0I8Q1B13jGGlsTHW+bJWhD8cK4kAciANxMGccj6/n8V61Se6DRUyOwfpwhxSiPlv5Vf2G2GwfzIZOjtLny4Qf2YdODrxbQRyIA3GAOBAH4kAciANxIA7EgTgQB4gDcSAOxIE4EAe5WRjX04JvtFsYN4sFS2AsjDNCUowQ1xx0jcPYKHq+WBinD8cK4kAciANxMGkcQy6MW0PC+2AWxinDscL/WRhnZuSYHM6XQmU0C+NwzYE4EAfiQByIA3EgDsSBOEAciANxIA7EgTgQB+JAHIgDboyzMC7J34mvzcK4JRYsP6nIwjgjJMUIcc1B1ziCfwXpfCkTR5ffx+rDsYJrDsSBOBAH4riry8IW98HKTI7gPpThWGF1Qy2MMzMKT45Vzxdl1J4ceLeCOBAH4gBxIA7EgTgQB+JAHIgDcSAOEAfiQByIA3EgDsSBOBAH4gBxIA7EgTgQB+JAHIgDcSAOxAHiQByIA3EgDsRBET/dVo71dC3jwwAAAABJRU5ErkJggg==">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --bg-oben:#D7E8E6; --bg-unten:#F6FAF9;
+  --karte:#FFFFFF; --tint:#EAF3F2; --tint2:#F4FAF9;
+  --rand:#DEEAE9; --rand-stark:#C7DCDA;
+  --tinte:#0A1E1D; --grau:#6B8382; --grau-hell:#97AAA9;
+  --gruen:#035352; --gruen-tief:#023B3A; --gruen-hell:#0C7A78;
+  --sand:#F3E8BC; --sand-t:#035352;
+  --rot:#AF4A3E; --rot-bg:#F8E9E5;
+  --schiefer:#8A7434;
+  --schatten:0 1px 2px rgba(3,45,44,.05), 0 10px 28px rgba(3,45,44,.06);
+  --schatten-k:0 1px 2px rgba(3,45,44,.06);
+  --r-karte:22px; --r-feld:13px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{min-height:100vh;color:var(--tinte);font-family:'Plus Jakarta Sans',-apple-system,system-ui,sans-serif;
+  background:var(--bg-unten);
+  background-image:linear-gradient(175deg,var(--bg-oben) 0%,var(--bg-unten) 42%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;font-size:15px;line-height:1.45;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,select{font-family:inherit;}
+svg{width:1em;height:1em;flex-shrink:0;}
+.wrap{max-width:760px;margin:0 auto;padding:4px 16px 48px;}
+.num{font-variant-numeric:tabular-nums;}
+
+/* ---- Schwebende Leiste oben ---- */
+.topbar{position:sticky;top:0;z-index:40;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;}
+.topinnen{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px;
+  background:rgba(250,253,253,.85);backdrop-filter:blur(20px) saturate(1.6);
+  -webkit-backdrop-filter:blur(20px) saturate(1.6);
+  border:1px solid var(--rand);border-radius:999px;padding:7px 9px 7px 19px;
+  box-shadow:0 1px 2px rgba(3,45,44,.05),0 8px 26px rgba(3,45,44,.08);}
+.marke{font-size:17px;font-weight:800;letter-spacing:-.035em;white-space:nowrap;}
+.marke{color:var(--gruen);}
+.punkt{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--rand-stark);
+  margin-left:7px;vertical-align:middle;flex-shrink:0;}
+.punkt.ok{background:var(--gruen-hell);}
+.punkt.aktiv{background:var(--sand);animation:pulsen 1.1s ease-in-out infinite;}
+.punkt.fehler{background:var(--rot);}
+@keyframes pulsen{0%,100%{opacity:1}50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){.punkt.aktiv{animation:none;}}
+.marke span{color:var(--gruen-hell);font-weight:700;}
+.tabs{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.tabs::-webkit-scrollbar{display:none;}
+.tabs button{padding:9px 13px;border-radius:999px;font-size:13.5px;font-weight:600;
+  color:var(--grau);white-space:nowrap;transition:background .18s,color .18s;}
+.tabs button.an{background:var(--gruen-tief);color:#fff;}
+.iknopf{width:37px;height:37px;border-radius:50%;background:var(--tint);border:1px solid var(--rand);
+  display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--tinte);flex-shrink:0;}
+.iknopf svg{stroke-width:1.7;}
+.iknopf.an{background:var(--gruen-tief);border-color:var(--gruen-tief);color:#fff;}
+.jahrwahl{background:var(--tint);border:1px solid var(--rand);color:var(--tinte);
+  font-size:13.5px;font-weight:600;padding:9px 13px;border-radius:999px;
+  appearance:none;text-align:center;flex-shrink:0;}
+@media (max-width:640px){
+  .topinnen{flex-wrap:wrap;border-radius:26px;padding:11px 12px;gap:8px;}
+  .marke{order:1;font-size:16px;}
+  .iknopf{order:2;margin-left:auto;}
+  .jahrwahl{order:3;}
+  .tabs{order:4;width:100%;flex:0 0 100%;}
+  .tabs button{flex:1;padding:9px 6px;font-size:12.5px;text-align:center;}
+}
+
+/* ---- Karten ---- */
+.karte{background:var(--karte);border:1px solid var(--rand);border-radius:var(--r-karte);
+  box-shadow:var(--schatten);padding:20px;margin-bottom:14px;}
+.karte.eng{padding:16px 18px;}
+.kkopf{display:flex;align-items:center;gap:9px;margin-bottom:14px;}
+.kkopf svg{font-size:17px;color:var(--gruen-hell);stroke-width:1.7;}
+.ktitel{font-size:15px;font-weight:700;letter-spacing:-.01em;}
+.kzusatz{margin-left:auto;font-size:12.5px;color:var(--grau);font-weight:500;}
+
+/* ---- Umsatzpegel ---- */
+.pegelzeile{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.pegelwert{font-size:31px;font-weight:800;letter-spacing:-.035em;}
+.pegelziel{font-size:12.5px;color:var(--grau);font-weight:500;}
+.bahn{height:9px;border-radius:999px;background:var(--tint);overflow:hidden;position:relative;}
+.fuell{position:absolute;inset:0 auto 0 0;border-radius:999px;background:var(--gruen-hell);
+  transition:width .55s cubic-bezier(.22,1,.36,1);}
+.fuell.heiss{background:var(--rot);}
+.pegelfuss{display:flex;justify-content:space-between;margin-top:9px;font-size:12px;
+  color:var(--grau-hell);font-weight:500;}
+
+/* ---- Nächster Schritt ---- */
+.schritt{display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+  background:var(--gruen);color:#fff;border-radius:18px;padding:16px 18px;margin-bottom:14px;
+  box-shadow:0 6px 22px rgba(3,83,82,.22);}
+.schritt .kreis{width:38px;height:38px;border-radius:12px;background:rgba(243,232,188,.18);color:var(--sand);
+  display:flex;align-items:center;justify-content:center;font-size:19px;}
+.schritt .txt{flex:1;min-width:0;}
+.schritt .oben{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--sand);font-weight:700;}
+.schritt .unten{font-size:15px;font-weight:700;margin-top:2px;letter-spacing:-.01em;}
+.schritt .pfeil{font-size:19px;opacity:.75;}
+
+/* ---- Kennzahlen ---- */
+.zahlen{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.zelle{background:var(--tint2);border:1px solid var(--rand);border-radius:15px;padding:13px 14px;}
+.zlabel{font-size:11.5px;color:var(--grau);font-weight:600;}
+.zwert{font-size:19px;font-weight:700;margin-top:3px;letter-spacing:-.03em;}
+.zwert.gold{color:var(--gruen);}.zwert.blau{color:var(--schiefer);}
+
+/* ---- Knöpfe ---- */
+.pill{display:inline-flex;align-items:center;gap:7px;background:var(--tint);
+  border:1px solid var(--rand);border-radius:999px;padding:9px 15px;font-size:13.5px;
+  font-weight:600;color:var(--tinte);white-space:nowrap;}
+.pill svg{font-size:15px;}
+.pill.dunkel{background:var(--gruen-tief);border-color:var(--gruen-tief);color:#fff;}
+.breit{width:100%;justify-content:center;border-radius:var(--r-feld);padding:13px;font-size:14.5px;}
+.breit.voll{background:var(--gruen);border-color:var(--gruen);color:#fff;}
+.breit:disabled{opacity:.45;}
+.breit+.breit{margin-top:9px;}
+
+/* ---- Formular ---- */
+.feldgruppe{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.feld{display:flex;flex-direction:column;gap:6px;}
+.feld.voll{grid-column:1/-1;}
+.feld label{font-size:12px;font-weight:600;color:var(--grau);}
+.feld input,.feld select{background:var(--tint2);border:1px solid var(--rand);color:var(--tinte);
+  border-radius:var(--r-feld);padding:12px 13px;font-size:16px;width:100%;font-weight:500;}
+.feld input::placeholder{color:var(--grau-hell);font-weight:400;}
+.feld input:focus,.feld select:focus{outline:none;border-color:var(--gruen-hell);background:#fff;
+  box-shadow:0 0 0 3px rgba(12,122,120,.15);}
+.haken{display:flex;align-items:center;gap:10px;padding:4px 0;font-size:14px;grid-column:1/-1;font-weight:500;}
+.haken input{width:20px;height:20px;accent-color:var(--gruen);}
+.notiz{margin-top:13px;padding:12px 14px;background:var(--tint);border-radius:14px;
+  font-size:13px;line-height:1.55;color:var(--grau);}
+.notiz b{color:var(--gruen);font-weight:700;}
+.notiz.warn{background:var(--sand);color:var(--sand-t);}
+.notiz.warn b{color:var(--sand-t);}
+
+/* ---- Anhänge ---- */
+.anhbereich{grid-column:1/-1;display:flex;flex-direction:column;gap:11px;}
+.anhliste{display:flex;flex-wrap:wrap;gap:11px;}
+.anh{position:relative;width:80px;}
+.anhflaeche{width:80px;height:80px;border-radius:15px;border:1px solid var(--rand);
+  background:var(--tint);object-fit:cover;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--schiefer);letter-spacing:.05em;overflow:hidden;}
+.anhname{font-size:10.5px;color:var(--grau);margin-top:5px;line-height:1.3;word-break:break-all;
+  max-height:27px;overflow:hidden;}
+.anhx{position:absolute;top:-7px;right:-7px;width:24px;height:24px;border-radius:50%;
+  background:var(--rot);color:#fff;font-size:14px;line-height:1;display:flex;
+  align-items:center;justify-content:center;box-shadow:var(--schatten-k);}
+
+/* ---- Zeilen ---- */
+.zeile{display:flex;gap:13px;align-items:flex-start;padding:15px 0;border-bottom:1px solid var(--rand);}
+.zeile:last-child{border-bottom:none;padding-bottom:2px;}
+.zdatum{font-size:12px;color:var(--grau);padding-top:3px;min-width:50px;font-weight:600;}
+.zmitte{flex:1;min-width:0;}
+.ztitel{font-size:15px;font-weight:650;letter-spacing:-.01em;}
+.zmeta{font-size:12.5px;color:var(--grau);margin-top:3px;line-height:1.5;font-weight:500;}
+.zrechts{text-align:right;white-space:nowrap;display:flex;flex-direction:column;align-items:flex-end;gap:7px;}
+.zbetrag{font-size:15px;font-weight:750;letter-spacing:-.02em;}
+.zbetrag.ein{color:var(--gruen);}.zbetrag.aus{color:var(--schiefer);}
+.zklein{font-size:11.5px;color:var(--grau);margin-top:2px;font-weight:500;}
+.zanh{display:flex;gap:5px;}
+.zthumb{width:40px;height:40px;border-radius:11px;border:1px solid var(--rand);object-fit:cover;
+  display:flex;align-items:center;justify-content:center;background:var(--tint);
+  font-size:9.5px;font-weight:700;color:var(--schiefer);}
+.zaktion{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;}
+.kpill{display:inline-flex;align-items:center;gap:5px;background:var(--tint);border:1px solid var(--rand);
+  border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--tinte);}
+.kpill svg{font-size:13px;stroke-width:2;}
+.kpill.gruen{background:var(--gruen);border-color:var(--gruen);color:#fff;}
+.kpill.still{background:none;border-color:transparent;color:var(--grau-hell);padding:6px 5px;}
+.fahne{display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;padding:3px 9px;
+  border-radius:999px;background:var(--sand);color:var(--sand-t);margin-left:8px;
+  letter-spacing:.01em;vertical-align:middle;}
+.fahne.grau{background:var(--tint);color:var(--grau);}
+.fahne.rot{background:var(--rot-bg);color:var(--rot);}
+
+.leer{padding:22px 2px;color:var(--grau);font-size:14px;line-height:1.6;font-weight:500;}
+
+/* ---- Bilanz ---- */
+.brow{display:flex;justify-content:space-between;gap:14px;padding:13px 0;
+  border-bottom:1px solid var(--rand);font-size:14.5px;font-weight:500;}
+.brow:last-child{border-bottom:none;}
+.brow span:last-child{font-weight:700;white-space:nowrap;}
+.brow.gross{font-size:17px;font-weight:750;padding:16px 0;letter-spacing:-.02em;}
+.brow.gross span:last-child{font-weight:800;color:var(--gruen);}
+.hinweis{font-size:13px;line-height:1.65;color:var(--grau);font-weight:500;}
+.hinweis b{color:var(--tinte);font-weight:700;}
+.hinweis p+p{margin-top:11px;}
+
+/* ---- Lupe ---- */
+.lupe{position:fixed;inset:0;background:rgba(2,38,37,.86);backdrop-filter:blur(6px);z-index:60;
+  display:flex;align-items:center;justify-content:center;padding:20px;}
+.lupe img{max-width:100%;max-height:80vh;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.lupezu{position:absolute;top:calc(16px + env(safe-area-inset-top));right:16px;background:#fff;
+  border-radius:999px;padding:10px 18px;font-size:14px;font-weight:600;color:var(--tinte);}
+
+@media (max-width:430px){.feldgruppe{grid-template-columns:1fr;}.pegelwert{font-size:28px;}}
+@media (prefers-reduced-motion:reduce){.fuell{transition:none;}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topinnen" id="topbar"></div></header>
+<div class="wrap">
+  <div id="kopf"></div>
+  <div id="inhalt"></div>
+</div>
+<div id="lupe"></div>
+<input type="file" id="importfeld" accept="application/json" style="display:none">
+<input type="file" id="datei" accept="image/*,application/pdf" multiple style="display:none">
+
+<script>
+const KEY="steuerbuch-v1", SKEY="steuerbuch-key", KM_SATZ=.3, VP_TAG=14, VP_NACHT=28, GRENZE=25000, QUOTE=.3;
+const ARTEN=["Hochzeit","Firmenkunde","Sonstiges"];
+const ANLAESSE=["Vorgespräch","Location-Scouting","Kundentermin","Materialabholung","Fortbildung / Messe","Sonstiges"];
+const KATEGORIEN=["Technik & Equipment","Software & Abos","Musik & Lizenzen","Werbung & Akquise",
+  "Reisenebenkosten (Parken, Maut)","Übernachtung","Bewirtung","Büro & Verbrauch",
+  "Versicherung & Gebühren","Fortbildung","Sonstiges"];
+
+/* ---------- Symbole ---------- */
+const S=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const IKON={
+  beleg:S('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>'),
+  tag:S('<path d="M20.6 13.4 12 22l-9-9V4a1 1 0 0 1 1-1h9z"/><circle cx="7.6" cy="7.6" r="1.2"/>'),
+  auto:S('<path d="M3 13.5l1.9-5.2A2 2 0 0 1 6.8 7h10.4a2 2 0 0 1 1.9 1.3l1.9 5.2V19h-3v-2H6v2H3z"/><circle cx="7.2" cy="15.2" r=".9"/><circle cx="16.8" cy="15.2" r=".9"/>'),
+  chart:S('<path d="M3 21h18"/><path d="M6.5 18v-6M12 18V6M17.5 18v-9"/>'),
+  kamera:S('<path d="M4 8.5h2.8L8.3 6h7.4l1.5 2.5H20a1 1 0 0 1 1 1v8.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.1"/>'),
+  pin:S('<path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/>'),
+  pfeil:S('<path d="M5 12h13M12.5 6l6 6-6 6"/>'),
+  plus:S('<path d="M12 5.5v13M5.5 12h13"/>'),
+  zu:S('<path d="M6 6l12 12M18 6L6 18"/>'),
+  archiv:S('<path d="M12 3.5v11M7.5 10.5l4.5 4.5 4.5-4.5"/><path d="M4 20h16"/>'),
+  strasse:S('<path d="M9 3v3M9 10.5v3M9 18v3M15 3v3M15 10.5v3M15 18v3"/>'),
+  blitz:S('<path d="M13 2.5 4.5 13.5H11l-.5 8L19 10.5h-6.5z"/>'),
+  schluessel:S('<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3.5M15.5 12v2.5"/>'),
+  haus:S('<path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/>'),
+  check:S('<path d="M5 12.5l4.5 4.5L19 7"/>'),
+  zahnrad:S('<circle cx="12" cy="12" r="3.1"/><path d="M19.4 14.5a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.2a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/>'),
+  wolke:S('<path d="M7.2 18.5A4.2 4.2 0 0 1 7 10.1a5.4 5.4 0 0 1 10.3.9 3.8 3.8 0 0 1-.6 7.5z"/><path d="M12 16.5v-6M9.5 12.8 12 10.3l2.5 2.5"/>'),
+  stift:S('<path d="M14.5 5.5l4 4M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z"/>')
+};
+
+/* ---------- Speicher ---------- */
+const speicher={
+  async lesen(k){ if(window.storage){try{return (await window.storage.get(k)).value;}catch{return null;}}
+    return localStorage.getItem(k); },
+  async schreiben(k,v){ if(window.storage) return window.storage.set(k,v); localStorage.setItem(k,v); }
+};
+
+/* ---------- Dateien ---------- */
+let dbP=null;
+function db(){
+  if(!dbP) dbP=new Promise((res,rej)=>{
+    const r=indexedDB.open("steuerbuch",1);
+    r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains("bilder")) r.result.createObjectStore("bilder"); };
+    r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);
+  });
+  return dbP;
+}
+async function dSchreiben(id,d){const x=await db();return new Promise((res,rej)=>{
+  const t=x.transaction("bilder","readwrite");t.objectStore("bilder").put(d,id);
+  t.oncomplete=()=>res();t.onerror=()=>rej(t.error);});}
+async function dLesen(id){try{const x=await db();return await new Promise(res=>{
+  const q=x.transaction("bilder","readonly").objectStore("bilder").get(id);
+  q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);});}catch{return null;}}
+async function dLoeschen(id){try{const x=await db();await new Promise(res=>{
+  const t=x.transaction("bilder","readwrite");t.objectStore("bilder").delete(id);
+  t.oncomplete=res;t.onerror=res;});}catch{}}
+async function dAlle(){try{const x=await db();return await new Promise(res=>{
+  const s=x.transaction("bilder","readonly").objectStore("bilder");
+  const k=s.getAllKeys(),v=s.getAll(); const o={};
+  s.transaction.oncomplete=()=>{k.result.forEach((key,i)=>o[key]=v.result[i]);res(o);};});}catch{return {};}}
+
+function bildVerkleinern(datei){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const max=1600, sk=Math.min(1,max/Math.max(img.width,img.height));
+        const c=document.createElement("canvas");
+        c.width=Math.round(img.width*sk); c.height=Math.round(img.height*sk);
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        res(c.toDataURL("image/jpeg",.72));
+      };
+      img.onerror=rej; img.src=fr.result;
+    };
+    fr.onerror=rej; fr.readAsDataURL(datei);
+  });
+}
+function alsDataUrl(datei){return new Promise((res,rej)=>{
+  const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(datei);});}
+
+/* ---------- ZIP ---------- */
+let CRCTAB=null;
+function crc32(u8){
+  if(!CRCTAB){CRCTAB=new Uint32Array(256);
+    for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;CRCTAB[i]=c>>>0;}}
+  let c=0xFFFFFFFF;
+  for(let i=0;i<u8.length;i++) c=CRCTAB[(c^u8[i])&0xFF]^(c>>>8);
+  return (c^0xFFFFFFFF)>>>0;
+}
+function dataUrlBytes(d){
+  const bin=atob(String(d).split(",")[1]||""), u=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+  return u;
+}
+function zipBauen(dateien){
+  const enc=new TextEncoder(), teile=[], zentral=[]; let off=0;
+  for(const f of dateien){
+    const nm=enc.encode(f.name), crc=crc32(f.data), n=f.data.length;
+    const lok=new Uint8Array(30+nm.length), lv=new DataView(lok.buffer);
+    lv.setUint32(0,0x04034b50,true); lv.setUint16(4,20,true); lv.setUint16(6,0x0800,true);
+    lv.setUint16(8,0,true); lv.setUint16(10,0,true); lv.setUint16(12,0x21,true);
+    lv.setUint32(14,crc,true); lv.setUint32(18,n,true); lv.setUint32(22,n,true);
+    lv.setUint16(26,nm.length,true); lv.setUint16(28,0,true); lok.set(nm,30);
+    teile.push(lok,f.data);
+    const z=new Uint8Array(46+nm.length), zv=new DataView(z.buffer);
+    zv.setUint32(0,0x02014b50,true); zv.setUint16(4,20,true); zv.setUint16(6,20,true);
+    zv.setUint16(8,0x0800,true); zv.setUint16(10,0,true); zv.setUint16(12,0,true); zv.setUint16(14,0x21,true);
+    zv.setUint32(16,crc,true); zv.setUint32(20,n,true); zv.setUint32(24,n,true);
+    zv.setUint16(28,nm.length,true); zv.setUint32(42,off,true); z.set(nm,46);
+    zentral.push(z); off+=lok.length+n;
+  }
+  const zl=zentral.reduce((a,b)=>a+b.length,0);
+  const e=new Uint8Array(22), ev=new DataView(e.buffer);
+  ev.setUint32(0,0x06054b50,true); ev.setUint16(8,dateien.length,true);
+  ev.setUint16(10,dateien.length,true); ev.setUint32(12,zl,true); ev.setUint32(16,off,true);
+  return new Blob([...teile,...zentral,e],{type:"application/zip"});
+}
+
+/* ---------- Synchronisierung über ein privates GitHub-Repository ---------- */
+const SYNCKEY="steuerbuch-sync";
+let SYNC={repo:"",token:"",sha:null};
+let syncStatus="", syncZeit=0, sendeTimer=null, sendeLaeuft=false, nochmal=false, letztesLaden=0;
+
+const b64Von=s=>{const u=new TextEncoder().encode(s);let b="";
+  for(let i=0;i<u.length;i++)b+=String.fromCharCode(u[i]);return btoa(b);};
+const b64Zu=b=>{const bin=atob(b);const u=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder().decode(u);};
+
+const syncAn=()=>!!(SYNC.repo&&SYNC.token);
+function stand(s){ syncStatus=s; if(s!=="fehler") syncGrund=""; if(s==="ok") syncZeit=Date.now();
+  const pk=document.getElementById("punkt");
+  if(pk) pk.className="punkt "+(s==="ok"?"ok":s==="fehler"?"fehler":s?"aktiv":"");
+  const tx=document.getElementById("syncText");
+  if(tx) tx.innerHTML=syncTextInhalt();
+}
+function syncTextInhalt(){
+  if(!syncAn()) return "Nicht verbunden. Die Daten liegen nur auf diesem Gerät.";
+  if(syncStatus==="laden") return "Daten werden geholt …";
+  if(syncStatus==="sende") return "Änderungen werden hochgeladen …";
+  if(syncStatus==="fehler") return esc(syncGrund||"Abgleich fehlgeschlagen.");
+  if(syncZeit) return "Zuletzt abgeglichen um "+new Date(syncZeit).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" · "+esc(SYNC.repo);
+  return "Verbunden mit "+esc(SYNC.repo);
+}
+
+const ghKopf=()=>({Authorization:"Bearer "+SYNC.token,Accept:"application/vnd.github+json",
+  "X-GitHub-Api-Version":"2022-11-28"});
+
+let syncGrund="";
+function ghFehler(code){
+  syncGrund=
+    code===0?"Keine Verbindung zu GitHub möglich. Wichtig: Der Abgleich funktioniert nur in der installierten App unter deiner github.io-Adresse, nicht in der Vorschau im Claude-Chat."
+   :code===401?"Der Token wird nicht akzeptiert (401). Er wurde vermutlich unvollständig kopiert. Erzeug im Zweifel einen neuen und füg ihn komplett ein."
+   :code===403?"Kein Zugriff auf das Repository (403). Prüf beim Token unter Repository access, ob steuerbuch-daten ausgewählt ist und Contents auf Read and write steht."
+   :code===404?"Repository nicht gefunden (404). Schreibweise muss exakt stimmen: benutzername/steuerbuch-daten, ohne https und ohne Leerzeichen."
+   :"GitHub meldet Fehler "+code+".";
+  const e=new Error(syncGrund); e.code=code; return e;
+}
+
+async function ghGet(pfad){
+  let r;
+  try{ r=await fetch(`https://api.github.com/repos/${SYNC.repo}/contents/${encodeURI(pfad)}`,{headers:ghKopf()}); }
+  catch{ throw ghFehler(0); }
+  if(r.status===404||r.status===409) return null;   /* nicht vorhanden oder Repository noch leer */
+  if(!r.ok) throw ghFehler(r.status);
+  return r.json();
+}
+async function ghPut(pfad,b64,sha,msg){
+  const koerper={message:msg,content:b64};
+  if(sha) koerper.sha=sha;
+  let r;
+  try{ r=await fetch(`https://api.github.com/repos/${SYNC.repo}/contents/${encodeURI(pfad)}`,
+    {method:"PUT",headers:{...ghKopf(),"Content-Type":"application/json"},body:JSON.stringify(koerper)}); }
+  catch{ throw ghFehler(0); }
+  if(r.status===409||r.status===422){
+    const vor=await ghGet(pfad);
+    if(vor){ koerper.sha=vor.sha;
+      r=await fetch(`https://api.github.com/repos/${SYNC.repo}/contents/${encodeURI(pfad)}`,
+        {method:"PUT",headers:{...ghKopf(),"Content-Type":"application/json"},body:JSON.stringify(koerper)}); }
+  }
+  if(!r.ok) throw ghFehler(r.status);
+  return r.json();
+}
+async function ghDatei(pfad){
+  const j=await ghGet(pfad);
+  if(!j) return null;
+  let b64=(j.content||"").replace(/\s/g,"");
+  if(!b64&&j.sha){
+    const r=await fetch(`https://api.github.com/repos/${SYNC.repo}/git/blobs/${j.sha}`,{headers:ghKopf()});
+    if(!r.ok) return null;
+    b64=(((await r.json()).content)||"").replace(/\s/g,"");
+  }
+  if(!b64) return null;
+  return `data:${pfad.endsWith(".pdf")?"application/pdf":"image/jpeg"};base64,${b64}`;
+}
+
+const pfadVon=a=>`belege/${a.id}.${a.typ==="pdf"?"pdf":"jpg"}`;
+
+/* Datei zuerst lokal, sonst aus dem Repo nachladen und lokal ablegen */
+async function holeDatei(id,ext){
+  let d=await dLesen(id);
+  if(d) return d;
+  if(!syncAn()) return null;
+  try{
+    d=await ghDatei(`belege/${id}.${ext||"jpg"}`);
+    if(d) await dSchreiben(id,d);
+    return d;
+  }catch{ return null; }
+}
+
+async function syncCfgSichern(){ await speicher.schreiben(SYNCKEY,JSON.stringify(SYNC)); }
+
+function syncPlanen(){
+  if(!syncAn()) return;
+  clearTimeout(sendeTimer);
+  sendeTimer=setTimeout(syncSenden,1200);
+}
+
+async function syncSenden(){
+  if(!syncAn()) return;
+  if(sendeLaeuft){ nochmal=true; return; }
+  sendeLaeuft=true; stand("sende");
+  try{
+    let neueDateien=false;
+    for(const e of [...D.auftraege,...D.ausgaben]){
+      for(const a of anh(e)){
+        if(a.hoch) continue;
+        const d=CACHE.get(a.id)||await dLesen(a.id);
+        if(!d){ a.hoch=true; continue; }
+        await ghPut(pfadVon(a),String(d).split(",")[1]||"",null,"Beleg "+(a.name||a.id));
+        a.hoch=true; neueDateien=true;
+      }
+    }
+    const antwort=await ghPut("daten.json",b64Von(JSON.stringify(D)),SYNC.sha,
+      "Stand "+new Date().toLocaleString("de-DE"));
+    SYNC.sha=antwort.content.sha;
+    await speicher.schreiben(KEY,JSON.stringify(D));
+    await syncCfgSichern();
+    stand("ok");
+    if(neueDateien) zeichne();
+  }catch(e){ if(!syncGrund) syncGrund="Unerwarteter Fehler beim Hochladen."; stand("fehler"); zeichne(); }
+  sendeLaeuft=false;
+  if(nochmal){ nochmal=false; syncPlanen(); }
+}
+
+async function syncLaden(){
+  if(!syncAn()) return;
+  letztesLaden=Date.now(); stand("laden");
+  try{
+    const j=await ghGet("daten.json");
+    if(!j){ stand("ok"); await syncSenden(); return; }
+    SYNC.sha=j.sha;
+    const p=JSON.parse(b64Zu((j.content||"").replace(/\s/g,"")));
+    if((p.stand||0)>(D.stand||0)){
+      D={basis:{ort:""},standorte:[],auftraege:[],fahrten:[],ausgaben:[],...p};
+      D.basis={ort:"",...(p.basis||{})};
+      await speicher.schreiben(KEY,JSON.stringify(D));
+      stand("ok"); zeichne(); return;
+    }
+    if((D.stand||0)>(p.stand||0)){ await syncCfgSichern(); await syncSenden(); return; }
+    await syncCfgSichern(); stand("ok");
+  }catch(e){ if(!syncGrund) syncGrund="Unerwarteter Fehler beim Laden."; stand("fehler"); zeichne(); }
+}
+
+async function syncVerbinden(){
+  SYNC={repo:String(UI.syncrepo||"").trim().replace(/^https?:\/\/github\.com\//,"").replace(/\/$/,""),
+        token:String(UI.synctoken||"").trim(), sha:null};
+  if(!syncAn()){ UI.meldung="Repository und Token werden beide gebraucht."; zeichne(); return; }
+  await syncCfgSichern();
+  await syncLaden();
+  if(syncStatus!=="fehler") UI.meldung="Verbunden. Der erste Abgleich kann bei vielen Belegen etwas dauern.";
+  zeichne();
+}
+
+/* ---------- Claude ---------- */
+async function claude(inhalt){
+  const key=(await speicher.lesen(SKEY))||"";
+  const h={"content-type":"application/json"};
+  if(key){h["x-api-key"]=key;h["anthropic-version"]="2023-06-01";h["anthropic-dangerous-direct-browser-access"]="true";}
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:h,
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:inhalt}]})});
+  if(!r.ok) throw new Error("api");
+  const j=await r.json();
+  const t=j.content.filter(c=>c.type==="text").map(c=>c.text).join("").replace(/```json|```/g,"").trim();
+  return JSON.parse(t);
+}
+
+/* ---------- Zustand ---------- */
+let D={basis:{ort:""},standorte:[],auftraege:[],fahrten:[],ausgaben:[]};
+let UI={tab:"auftraege",jahr:new Date().getFullYear(),form:null,basisEdit:false,laedt:"",meldung:"",lupe:null,key:"",platz:"",editId:null,syncrepo:"",synctoken:""};
+let F={};
+const CACHE=new Map();
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const eur=n=>(n||0).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+const eur2=n=>(n||0).toLocaleString("de-DE",{style:"currency",currency:"EUR",minimumFractionDigits:2,maximumFractionDigits:2});
+const num=v=>{const n=parseFloat(String(v??"").replace(",","."));return isNaN(n)?0:n;};
+const dat=i=>i?i.slice(8,10)+"."+i.slice(5,7)+".":"";
+const heute=()=>new Date().toISOString().slice(0,10);
+const uid=()=>String(Date.now())+String(Math.floor(Math.random()*1e6));
+const mb=b=>(b/1048576).toFixed(1).replace(".",",")+" MB";
+const slug=s=>String(s||"ohne-namen").replace(/ä/gi,"ae").replace(/ö/gi,"oe").replace(/ü/gi,"ue").replace(/ß/g,"ss")
+  .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+  .replace(/[^a-zA-Z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,45)||"ohne-namen";
+const pausch=a=>{const km=num(a.km)*KM_SATZ;let vp=0;
+  if(a.uebernachtung)vp=VP_NACHT; else if(num(a.stunden)>8)vp=VP_TAG; return{km,vp,gesamt:km+vp};};
+const anh=e=>Array.isArray(e.anhaenge)?e.anhaenge:[];
+
+async function sichern(){
+  D.stand=Date.now();
+  try{await speicher.schreiben(KEY,JSON.stringify(D));}
+  catch{UI.meldung="Der letzte Eintrag wurde nicht gespeichert.";}
+  syncPlanen();
+}
+async function platzPruefen(){
+  try{ const e=await navigator.storage.estimate();
+    UI.platz=`${mb(e.usage||0)} von rund ${mb(e.quota||0)} belegt`; }catch{ UI.platz=""; }
+}
+const imJahr=l=>l.filter(e=>e.datum&&e.datum.startsWith(String(UI.jahr))).sort((a,b)=>b.datum.localeCompare(a.datum));
+
+function berechne(){
+  const auftraege=imJahr(D.auftraege), ausgaben=imJahr(D.ausgaben), extra=imJahr(D.fahrten);
+  const fahrten=[
+    ...auftraege.filter(a=>num(a.km)>0).map(a=>({id:a.id,datum:a.datum,ziel:a.ziel||a.kunde,anlass:a.art,km:num(a.km),quelle:"auftrag"})),
+    ...extra.map(f=>({id:f.id,datum:f.datum,ziel:f.ziel,anlass:f.anlass,km:num(f.km),quelle:"einzel"}))
+  ].sort((a,b)=>b.datum.localeCompare(a.datum));
+  const umsatz=auftraege.reduce((x,a)=>x+num(a.honorar),0);
+  const kmGes=fahrten.reduce((x,f)=>x+f.km,0), km=kmGes*KM_SATZ;
+  const vp=auftraege.reduce((x,a)=>x+pausch(a).vp,0);
+  const belege=ausgaben.reduce((x,a)=>x+num(a.betrag),0);
+  const gewinn=umsatz-km-vp-belege;
+  return{auftraege,ausgaben,fahrten,umsatz,kmGes,km,vp,belege,gewinn,
+    ruecklage:Math.max(0,gewinn*QUOTE),
+    ohneBeleg:ausgaben.filter(a=>anh(a).length===0).length,
+    ohneRechnung:auftraege.filter(a=>anh(a).length===0).length,
+    dateien:[...auftraege,...ausgaben].reduce((x,e)=>x+anh(e).length,0),
+    offenZahl:auftraege.filter(a=>!a.bezahlt).length,
+    offen:auftraege.filter(a=>!a.bezahlt).reduce((x,a)=>x+num(a.honorar),0)};
+}
+
+/* Nächster Schritt: das, was gerade am meisten drückt */
+function naechsterSchritt(s){
+  const p=s.umsatz/GRENZE;
+  if(p>.8) return {oben:"Achtung",unten:"Du näherst dich der 25.000-€-Grenze",tab:"abschluss"};
+  if(s.offenZahl) return {oben:"Nächster Schritt",unten:`${s.offenZahl} ${s.offenZahl===1?"Honorar":"Honorare"} noch nicht eingegangen`,tab:"auftraege"};
+  if(s.ohneBeleg) return {oben:"Nächster Schritt",unten:`${s.ohneBeleg} ${s.ohneBeleg===1?"Ausgabe":"Ausgaben"} ohne Beleg nachreichen`,tab:"ausgaben"};
+  if(s.ohneRechnung) return {oben:"Nächster Schritt",unten:`${s.ohneRechnung} ${s.ohneRechnung===1?"Auftrag":"Aufträge"} ohne Rechnungs-PDF`,tab:"auftraege"};
+  if(!D.basis.ort) return {oben:"Einrichtung",unten:"Startadresse für den Fahrtenrechner setzen",tab:"einstellungen"};
+  if(s.dateien) return {oben:"Empfehlung",unten:"Belegarchiv sichern",tab:"abschluss"};
+  return null;
+}
+
+/* ---------- Bausteine ---------- */
+function anhaengeFeld(text){
+  return `<div class="anhbereich">
+    <button class="pill breit" data-akt="datei">${IKON.kamera}${text}</button>
+    ${(F.anhaenge||[]).length?`<div class="anhliste">${F.anhaenge.map((a,i)=>`
+      <div class="anh">
+        ${a.typ==="pdf"
+          ?`<div class="anhflaeche" data-akt="oeffnen" data-i="${i}">PDF</div>`
+          :`<img class="anhflaeche" src="${a.data}" alt="" data-akt="lupe" data-src="${a.data}">`}
+        <button class="anhx" data-akt="anhWeg" data-i="${i}">×</button>
+        <div class="anhname">${esc(a.name)}</div>
+      </div>`).join("")}</div>`:""}
+  </div>`;
+}
+function anhaengeListe(e){
+  const l=anh(e); if(!l.length) return "";
+  return `<div class="zanh">${l.slice(0,3).map(a=>
+    a.typ==="pdf"
+      ?`<div class="zthumb" data-akt="oeffnenId" data-id="${a.id}" data-ext="pdf">PDF</div>`
+      :`<div class="zthumb" data-thumb="${a.id}" data-ext="jpg"></div>`).join("")}</div>`;
+}
+function ortBlock(platzhalter){
+  const bekannt=D.standorte.some(x=>x.name.toLowerCase()===String(F.ziel||"").trim().toLowerCase());
+  return `
+  <div class="feld voll"><label>Standort</label>
+    <input data-f="ziel" data-ort="1" list="ortliste" value="${esc(F.ziel)}" placeholder="${platzhalter}"></div>
+  <datalist id="ortliste">${D.standorte.map(st=>`<option value="${esc(st.name)}">`).join("")}</datalist>
+  <div class="anhbereich">
+    <button class="pill breit" data-akt="strecke" ${UI.laedt==="km"||!String(F.ziel||"").trim()||!D.basis.ort?"disabled":""}>
+      ${IKON.blitz}${UI.laedt==="km"?"Strecke wird ermittelt …":(num(F.km)>0?"Strecke neu berechnen":"Strecke berechnen")}</button>
+  </div>
+  ${!D.basis.ort?`<div class="notiz warn">Setz im Reiter Fahrten einmal deine Startadresse. Danach werden die Kilometer automatisch berechnet, sobald du einen Standort eintippst.</div>`:""}
+  ${F.streckeInfo?`<div class="notiz${F.streckeFehler?" warn":""}">${esc(F.streckeInfo)}</div>`:""}
+  ${(!bekannt&&String(F.ziel||"").trim()&&num(F.km)>0)?`<label class="haken"><input type="checkbox" data-f="merken" ${F.merken?"checked":""}>Standort merken, dann steht die Strecke beim nächsten Mal sofort</label>`:""}`;
+}
+
+const kkopf=(ikon,titel,zusatz,knopf="")=>`<div class="kkopf">${ikon}<div class="ktitel">${titel}</div>
+  ${zusatz?`<div class="kzusatz">${zusatz}</div>`:""}${knopf?`<div style="margin-left:${zusatz?"10px":"auto"}">${knopf}</div>`:""}</div>`;
+const neuKnopf=(v,offen,text)=>`<button class="pill ${offen?"":"dunkel"}" data-akt="form" data-v="${v}">${offen?IKON.zu:IKON.plus}${offen?"Abbrechen":text}</button>`;
+
+/* ---------- Aufträge ---------- */
+function ansichtAuftraege(s){
+  const auf=UI.form==="a", p=pausch(F);
+  return `
+  <div class="karte">
+    ${kkopf(IKON.beleg,"Aufträge",`${s.auftraege.length} in ${UI.jahr}`,neuKnopf("a",auf,"Neu"))}
+    ${auf?`
+      <div class="feldgruppe">
+        ${anhaengeFeld("Rechnung anhängen")}
+        <div class="feld"><label>Datum</label><input type="date" data-f="datum" value="${esc(F.datum)}"></div>
+        <div class="feld"><label>Art</label><select data-f="art">${ARTEN.map(a=>`<option ${F.art===a?"selected":""}>${a}</option>`).join("")}</select></div>
+        <div class="feld voll"><label>Kunde</label><input data-f="kunde" value="${esc(F.kunde)}" placeholder="Alona & Martin"></div>
+        ${ortBlock("Schloss Thurnau, Marktplatz 1")}
+        <div class="feld"><label>Honorar €</label><input inputmode="decimal" data-f="honorar" value="${esc(F.honorar)}" placeholder="1800"></div>
+        <div class="feld"><label>Rechnungsnr.</label><input data-f="rechnungsnr" value="${esc(F.rechnungsnr)}" placeholder="2026-014"></div>
+        <div class="feld"><label>Stunden unterwegs</label><input inputmode="decimal" data-f="stunden" value="${esc(F.stunden)}" placeholder="12"></div>
+        <div class="feld"><label>km hin und zurück</label><input inputmode="numeric" data-f="km" value="${esc(F.km)}" placeholder="wird berechnet"></div>
+        <label class="haken"><input type="checkbox" data-f="uebernachtung" ${F.uebernachtung?"checked":""}>Mit Übernachtung</label>
+        <label class="haken"><input type="checkbox" data-f="bezahlt" ${F.bezahlt?"checked":""}>Honorar ist bereits eingegangen</label>
+      </div>
+      <div class="notiz" id="vorschau">Fahrtkosten <b>${eur2(p.km)}</b> · Verpflegung <b>${eur2(p.vp)}</b><br>Betriebsausgabe ohne Beleg: <b>${eur2(p.gesamt)}</b></div>
+      <button class="pill breit voll" data-akt="neuAuftrag" ${!String(F.kunde||"").trim()||num(F.honorar)<=0?"disabled":""}>${UI.editId?"Änderungen sichern":"Auftrag sichern"}</button>
+    `:""}
+    ${s.auftraege.length===0&&!auf?`<div class="leer">Noch kein Auftrag in diesem Jahr. Trag den ersten ein, am besten am Abend nach dem Dreh, solange du die Kilometer noch im Kopf hast.</div>`:""}
+    ${s.auftraege.map(a=>{const q=pausch(a);return `
+      <div class="zeile">
+        <div class="zdatum num">${dat(a.datum)}</div>
+        <div class="zmitte">
+          <div class="ztitel">${esc(a.kunde)}${a.bezahlt?"":`<span class="fahne">Zahlung offen</span>`}</div>
+          <div class="zmeta">${esc(a.art)}${a.ziel?" · "+esc(a.ziel):""}${a.rechnungsnr?" · RG "+esc(a.rechnungsnr):""}${q.gesamt>0?" · Pauschalen "+eur2(q.gesamt):""}</div>
+          <div class="zaktion">
+            ${a.bezahlt?"":`<button class="kpill gruen" data-akt="bezahlt" data-id="${a.id}">${IKON.check}Zahlung erhalten</button>`}
+            <button class="kpill" data-akt="bearbeiten" data-typ="auftraege" data-id="${a.id}">${IKON.stift}Bearbeiten</button>
+            <button class="kpill still" data-akt="weg" data-typ="auftraege" data-id="${a.id}">Löschen</button>
+          </div>
+        </div>
+        <div class="zrechts"><div class="zbetrag ein num">${eur2(num(a.honorar))}</div>${anhaengeListe(a)}</div>
+      </div>`;}).join("")}
+  </div>`;
+}
+
+/* ---------- Ausgaben ---------- */
+function ansichtAusgaben(s){
+  const auf=UI.form==="b", hatAnh=(F.anhaenge||[]).length>0;
+  return `
+  <div class="karte">
+    ${kkopf(IKON.tag,"Ausgaben",`${s.ausgaben.length} in ${UI.jahr}`,neuKnopf("b",auf,"Neu"))}
+    ${auf?`
+      <div class="feldgruppe">
+        ${anhaengeFeld(hatAnh?"Weiteren Beleg anhängen":"Beleg fotografieren oder PDF wählen")}
+        ${hatAnh?`<div class="anhbereich"><button class="pill breit" data-akt="auslesen" ${UI.laedt==="ocr"?"disabled":""}>${IKON.blitz}${UI.laedt==="ocr"?"Beleg wird gelesen …":"Automatisch auslesen"}</button></div>`:""}
+        <div class="feld"><label>Datum</label><input type="date" data-f="datum" value="${esc(F.datum)}"></div>
+        <div class="feld"><label>Betrag €</label><input inputmode="decimal" data-f="betrag" value="${esc(F.betrag)}" placeholder="349,90"></div>
+        <div class="feld voll"><label>Was</label><input data-f="was" value="${esc(F.was)}" placeholder="Sigma 24-70 gebraucht"></div>
+        <div class="feld voll"><label>Kategorie</label><select data-f="kategorie">${KATEGORIEN.map(k=>`<option ${F.kategorie===k?"selected":""}>${esc(k)}</option>`).join("")}</select></div>
+      </div>
+      ${F.hinweis?`<div class="notiz warn">${esc(F.hinweis)}</div>`:""}
+      <div class="notiz" id="vorschau">Bei rund 32% Steuersatz kostet dich das effektiv <b>${eur2(num(F.betrag)*.68)}</b></div>
+      <button class="pill breit voll" data-akt="neuAusgabe" ${!String(F.was||"").trim()||num(F.betrag)<=0?"disabled":""}>${UI.editId?"Änderungen sichern":"Ausgabe sichern"}</button>
+    `:""}
+    ${s.ausgaben.length===0&&!auf?`<div class="leer">Noch keine Ausgabe in diesem Jahr. Alles, was du fürs Gewerbe kaufst, gehört hier rein, vom Objektiv bis zum Musikabo.</div>`:""}
+    ${s.ausgaben.map(a=>`
+      <div class="zeile">
+        <div class="zdatum num">${dat(a.datum)}</div>
+        <div class="zmitte">
+          <div class="ztitel">${esc(a.was)}${anh(a).length?"":`<span class="fahne rot">Beleg fehlt</span>`}</div>
+          <div class="zmeta">${esc(a.kategorie)}</div>
+          <div class="zaktion">
+            <button class="kpill" data-akt="bearbeiten" data-typ="ausgaben" data-id="${a.id}">${IKON.stift}Bearbeiten</button>
+            <button class="kpill still" data-akt="weg" data-typ="ausgaben" data-id="${a.id}">Löschen</button>
+          </div>
+        </div>
+        <div class="zrechts"><div class="zbetrag aus num">${eur2(num(a.betrag))}</div>${anhaengeListe(a)}</div>
+      </div>`).join("")}
+  </div>`;
+}
+
+/* ---------- Fahrten ---------- */
+function ansichtFahrten(s){
+  const stOffen=UI.form==="st", fzOffen=UI.form==="fz";
+  const proZiel=Object.entries(s.fahrten.reduce((m,f)=>{m[f.ziel]=(m[f.ziel]||0)+f.km;return m;},{})).sort((a,b)=>b[1]-a[1]);
+  return `
+  <div class="karte">
+    ${kkopf(IKON.pin,"Standorte",`${D.standorte.length} gespeichert`,neuKnopf("st",stOffen,"Neu"))}
+    ${stOffen?`
+      <div class="feldgruppe">
+        <div class="feld voll"><label>Name</label><input data-f="name" value="${esc(F.name)}" placeholder="Schloss Thurnau"></div>
+        <div class="feld voll"><label>Adresse</label><input data-f="adresse" value="${esc(F.adresse)}" placeholder="Marktplatz 1, 95349 Thurnau"></div>
+        <div class="feld voll"><label>Einfache Strecke in km</label><input inputmode="numeric" data-f="km" value="${esc(F.km)}" placeholder="42"></div>
+        <div class="anhbereich"><button class="pill breit" data-akt="schaetzen" ${UI.laedt==="km"||!D.basis.ort?"disabled":""}>${IKON.blitz}${UI.laedt==="km"?"Strecke wird ermittelt …":"Strecke schätzen lassen"}</button></div>
+      </div>
+      ${!D.basis.ort?`<div class="notiz warn">Setz zuerst oben deine Startadresse, dann kann die Strecke geschätzt werden.</div>`:""}
+      ${F.hinweis?`<div class="notiz warn">${esc(F.hinweis)}</div>`:""}
+      <div class="notiz" id="vorschau">Hin und zurück: <b>${num(F.km)*2} km</b> · ${eur2(num(F.km)*2*KM_SATZ)} pro Fahrt</div>
+      <button class="pill breit voll" data-akt="neuStandort" ${!String(F.name||"").trim()||num(F.km)<=0?"disabled":""}>${UI.editId?"Änderungen sichern":"Standort sichern"}</button>
+    `:""}
+    ${D.standorte.length===0&&!stOffen?`<div class="leer">Leg jede Location einmal an, an der du drehst. Danach wählst du sie beim Auftrag nur noch aus und die Kilometer stehen automatisch drin.</div>`:""}
+    ${D.standorte.map(st=>`
+      <div class="zeile">
+        <div class="zmitte">
+          <div class="ztitel">${esc(st.name)}${st.geschaetzt?`<span class="fahne grau">geschätzt</span>`:""}</div>
+          ${st.adresse?`<div class="zmeta">${esc(st.adresse)}</div>`:""}
+          <div class="zaktion">
+            <button class="kpill" data-akt="bearbeiten" data-typ="standorte" data-id="${st.id}">${IKON.stift}Bearbeiten</button>
+            <button class="kpill still" data-akt="weg" data-typ="standorte" data-id="${st.id}">Löschen</button>
+          </div>
+        </div>
+        <div class="zrechts"><div class="zbetrag num">${st.km} km</div><div class="zklein num">${st.km*2} km hin/zurück</div></div>
+      </div>`).join("")}
+  </div>
+
+  <div class="karte">
+    ${kkopf(IKON.auto,"Fahrtenaufstellung",`${s.kmGes.toLocaleString("de-DE")} km · ${eur2(s.km)}`,neuKnopf("fz",fzOffen,"Fahrt"))}
+    ${fzOffen?`
+      <div class="feldgruppe">
+        <div class="feld"><label>Datum</label><input type="date" data-f="datum" value="${esc(F.datum)}"></div>
+        <div class="feld"><label>Anlass</label><select data-f="anlass">${ANLAESSE.map(a=>`<option ${F.anlass===a?"selected":""}>${a}</option>`).join("")}</select></div>
+        ${ortBlock("Foto Müller, Bayreuth")}
+        <div class="feld voll"><label>km hin und zurück</label><input inputmode="numeric" data-f="km" value="${esc(F.km)}" placeholder="wird berechnet"></div>
+      </div>
+      <div class="notiz" id="vorschau">Betriebsausgabe: <b>${eur2(num(F.km)*KM_SATZ)}</b></div>
+      <button class="pill breit voll" data-akt="neuFahrt" ${!String(F.ziel||"").trim()||num(F.km)<=0?"disabled":""}>${UI.editId?"Änderungen sichern":"Fahrt sichern"}</button>
+    `:""}
+    ${s.fahrten.length===0&&!fzOffen?`<div class="leer">Fahrten entstehen automatisch aus deinen Aufträgen, sobald dort Kilometer hinterlegt sind. Vorgespräche und Scouting trägst du hier einzeln ein.</div>`:""}
+    ${s.fahrten.map(f=>`
+      <div class="zeile">
+        <div class="zdatum num">${dat(f.datum)}</div>
+        <div class="zmitte">
+          <div class="ztitel">${esc(f.ziel)}${f.quelle==="auftrag"?`<span class="fahne grau">aus Auftrag</span>`:""}</div>
+          <div class="zmeta">${esc(f.anlass)} · ${f.km} km hin und zurück</div>
+          ${f.quelle==="einzel"?`<div class="zaktion">
+            <button class="kpill" data-akt="bearbeiten" data-typ="fahrten" data-id="${f.id}">${IKON.stift}Bearbeiten</button>
+            <button class="kpill still" data-akt="weg" data-typ="fahrten" data-id="${f.id}">Löschen</button>
+          </div>`:""}
+        </div>
+        <div class="zrechts"><div class="zbetrag aus num">${eur2(f.km*KM_SATZ)}</div></div>
+      </div>`).join("")}
+  </div>
+
+  ${proZiel.length>1?`<div class="karte">
+    ${kkopf(IKON.strasse,"Kilometer nach Ziel","")}
+    ${proZiel.map(([z,km])=>`<div class="brow"><span>${esc(z)}</span><span class="num">${km.toLocaleString("de-DE")} km</span></div>`).join("")}
+  </div>`:""}`;
+}
+
+/* ---------- Abschluss ---------- */
+function ansichtAbschluss(s){
+  return `
+  <div class="karte">
+    ${kkopf(IKON.chart,"Jahresabschluss",String(UI.jahr))}
+    <div class="brow"><span>Betriebseinnahmen · ${s.auftraege.length} Aufträge</span><span class="num">${eur2(s.umsatz)}</span></div>
+    <div class="brow"><span>Fahrtkosten · ${s.kmGes.toLocaleString("de-DE")} km</span><span class="num">− ${eur2(s.km)}</span></div>
+    <div class="brow"><span>Verpflegungsmehraufwand</span><span class="num">− ${eur2(s.vp)}</span></div>
+    <div class="brow"><span>Übrige Betriebsausgaben</span><span class="num">− ${eur2(s.belege)}</span></div>
+    <div class="brow gross"><span>Gewinn</span><span class="num">${eur2(s.gewinn)}</span></div>
+    <div class="brow"><span>Davon zurücklegen (30%)</span><span class="num">${eur2(s.ruecklage)}</span></div>
+  </div>
+
+  <div class="karte">
+    ${kkopf(IKON.archiv,"Archiv & Export",`${s.dateien} Dateien`)}
+    <button class="pill breit voll" data-akt="zip" ${UI.laedt==="zip"?"disabled":""}>${UI.laedt==="zip"?"Archiv wird gepackt …":"Belegarchiv "+UI.jahr+" als ZIP"}</button>
+    <button class="pill breit" data-akt="csv">Jahr als CSV exportieren</button>
+    <div class="notiz">Das ZIP enthält alle Rechnungs-PDFs und Belege des Jahres, benannt nach Datum und Vorgang, getrennt in Einnahmen und Ausgaben. Einmal im Quartal in deine Cloud ziehen.</div>
+  </div>
+
+  <div class="karte">
+    <div class="hinweis">
+      <p><b>Der Gewinn</b> wandert in die Anlage EÜR und die Anlage G deiner Einkommensteuererklärung.</p>
+      <p><b>Tankbelege</b> sind neben der Kilometerpauschale von 0,30 € nicht zusätzlich absetzbar. Parkgebühren und Maut dagegen schon.</p>
+    </div>
+  </div>`;
+}
+
+function ansichtEinstellungen(s){
+  return `
+  <div class="karte eng">
+    ${kkopf(IKON.haus,"Startadresse","",`<button class="pill" data-akt="basisEdit">${UI.basisEdit?"Abbrechen":"Ändern"}</button>`)}
+    ${UI.basisEdit?`
+      <div class="feld voll"><label>Von wo aus du losfährst</label>
+        <input data-f="ort" value="${esc(F.ort)}" placeholder="Ludwigstraße 1, 95028 Hof"></div>
+      <button class="pill breit voll" data-akt="neuBasis" ${!String(F.ort||"").trim()?"disabled":""}>Startadresse sichern</button>
+    `:`<div style="font-size:15px;font-weight:600">${D.basis.ort?esc(D.basis.ort):`<span style="color:var(--grau-hell);font-weight:500">Noch nicht gesetzt</span>`}</div>
+       <div class="notiz">Grundlage für die automatische Kilometerberechnung bei Aufträgen und Fahrten.</div>`}
+  </div>
+
+  <div class="karte">
+    ${kkopf(IKON.wolke,"Synchronisierung",syncAn()?"aktiv":"aus")}
+    <div class="feldgruppe">
+      <div class="feld voll"><label>Privates Repository</label>
+        <input data-f="syncrepo" value="${esc(UI.syncrepo)}" placeholder="deinname/steuerbuch-daten"></div>
+      <div class="feld voll"><label>GitHub Token</label>
+        <input type="password" data-f="synctoken" value="${esc(UI.synctoken)}" placeholder="github_pat_..."></div>
+    </div>
+    <button class="pill breit voll" data-akt="syncVerbinden">${syncAn()?"Verbindung aktualisieren":"Verbinden und abgleichen"}</button>
+    ${syncAn()?`<button class="pill breit" data-akt="syncJetzt">Jetzt abgleichen</button>
+    <button class="pill breit" data-akt="syncTrennen">Verbindung trennen</button>`:""}
+    <div class="notiz" id="syncText">${syncTextInhalt()}</div>
+  </div>
+
+  <div class="karte">
+    ${kkopf(IKON.schluessel,"Automatisches Auslesen","optional")}
+    <div class="feld voll"><label>Anthropic API-Key</label>
+      <input type="password" data-f="key" value="${esc(UI.key)}" placeholder="sk-ant-..."></div>
+    <button class="pill breit voll" data-akt="keySichern">Key sichern</button>
+    <div class="notiz">Nötig für "Beleg automatisch auslesen" und die Streckenberechnung. Der Key bleibt auf diesem Gerät.</div>
+  </div>
+
+  <div class="karte">
+    ${kkopf(IKON.archiv,"Datensicherung","")}
+    <button class="pill breit" data-akt="backupKlein">Daten sichern (ohne Dateien)</button>
+    <button class="pill breit" data-akt="backupGross" ${UI.laedt==="bk"?"disabled":""}>${UI.laedt==="bk"?"Wird gepackt …":"Komplettsicherung mit Belegen"}</button>
+    <button class="pill breit" data-akt="import">Sicherung einlesen</button>
+    <div class="notiz">${UI.platz?"Speicher auf diesem Gerät: "+esc(UI.platz)+". ":""}Die Komplettsicherung ist zum Wiedereinspielen bei Gerätewechsel gedacht, das ZIP im Abschluss zum Ablegen und Öffnen.</div>
+  </div>`;
+}
+
+/* ---------- Zeichnen ---------- */
+function zeichne(){
+  const s=berechne();
+  const jahre=[...new Set([new Date().getFullYear(),
+    ...[...D.auftraege,...D.ausgaben,...D.fahrten].filter(e=>e.datum).map(e=>+e.datum.slice(0,4))])].sort((a,b)=>b-a);
+  const p=Math.min(1,s.umsatz/GRENZE), ns=naechsterSchritt(s);
+
+  document.getElementById("topbar").innerHTML=`
+    <div class="marke">Steuerbuch <span>Steri.Chas</span><span class="punkt ${syncStatus==="ok"?"ok":syncStatus==="fehler"?"fehler":syncStatus?"aktiv":""}" id="punkt"></span></div>
+    <div class="tabs">${[["auftraege","Aufträge"],["ausgaben","Ausgaben"],["fahrten","Fahrten"],["abschluss","Abschluss"]]
+      .map(([k,l])=>`<button class="${UI.tab===k?"an":""}" data-akt="tab" data-v="${k}">${l}</button>`).join("")}</div>
+    <button class="iknopf ${UI.tab==="einstellungen"?"an":""}" data-akt="tab" data-v="einstellungen" title="Einstellungen">${IKON.zahnrad}</button>
+    <select class="jahrwahl" data-akt="jahr">${jahre.map(j=>`<option value="${j}" ${j===UI.jahr?"selected":""}>${j}</option>`).join("")}</select>`;
+
+  document.getElementById("kopf").innerHTML=`
+    ${UI.meldung?`<div class="karte eng" style="background:var(--sand);border-color:var(--sand)">
+      <div style="font-size:13.5px;font-weight:600;color:var(--sand-t)">${esc(UI.meldung)}</div></div>`:""}
+    <div class="karte">
+      <div class="pegelzeile">
+        <div><div class="pegelwert num">${eur(s.umsatz)}</div>
+          <div class="pegelziel">Umsatz ${UI.jahr}</div></div>
+        <div style="text-align:right"><div style="font-size:15px;font-weight:700" class="num">${Math.round(p*100)}%</div>
+          <div class="pegelziel">von 25.000 €</div></div>
+      </div>
+      <div class="bahn"><div class="fuell ${p>.8?"heiss":""}" style="width:${p*100}%"></div></div>
+      <div class="pegelfuss"><span>0</span><span>Kleinunternehmergrenze</span><span>25.000</span></div>
+    </div>
+    ${ns?`<button class="schritt" data-akt="tab" data-v="${ns.tab}">
+      <div class="kreis">${IKON.blitz}</div>
+      <div class="txt"><div class="oben">${ns.oben}</div><div class="unten">${ns.unten}</div></div>
+      <div class="pfeil">${IKON.pfeil}</div></button>`:""}
+    <div class="karte">
+      <div class="zahlen">
+        <div class="zelle"><div class="zlabel">Gewinn</div><div class="zwert gold num">${eur(s.gewinn)}</div></div>
+        <div class="zelle"><div class="zlabel">Rücklage</div><div class="zwert num">${eur(s.ruecklage)}</div></div>
+        <div class="zelle"><div class="zlabel">Offen</div><div class="zwert blau num">${eur(s.offen)}</div></div>
+      </div>
+    </div>`;
+
+  document.getElementById("inhalt").innerHTML=
+    UI.tab==="auftraege"?ansichtAuftraege(s):
+    UI.tab==="ausgaben"?ansichtAusgaben(s):
+    UI.tab==="fahrten"?ansichtFahrten(s):
+    UI.tab==="einstellungen"?ansichtEinstellungen(s):ansichtAbschluss(s);
+
+  document.getElementById("lupe").innerHTML=UI.lupe?
+    `<div class="lupe"><button class="lupezu" data-akt="lupeZu">Schließen</button><img src="${UI.lupe}" alt="Beleg"></div>`:"";
+
+  document.querySelectorAll("[data-thumb]").forEach(async el=>{
+    const bid=el.dataset.thumb;
+    let d=CACHE.get(bid);
+    if(d===undefined||d===null){ d=await holeDatei(bid,el.dataset.ext); CACHE.set(bid,d); }
+    if(d) el.outerHTML=`<img class="zthumb" src="${d}" alt="Beleg" data-akt="lupe" data-src="${d}">`;
+  });
+}
+
+async function streckeRechnen(){
+  const name=String(F.ziel||"").trim();
+  if(!name||!D.basis.ort) return;
+  UI.laedt="km"; F.streckeFehler=false; zeichne();
+  try{
+    const r=await claude(`Wie viele Straßenkilometer sind es auf der üblichen Autoroute von "${D.basis.ort}" nach "${name}"? Antworte ausschließlich mit JSON, ohne Backticks: {"km": <zahl>}. Falls unbekannt: {"km": null}.`);
+    if(r.km==null) throw 0;
+    const einfach=Math.round(r.km);
+    F.km=String(einfach*2); F.merken=true;
+    F.streckeInfo=`${einfach} km einfach, ${einfach*2} km hin und zurück · ${eur2(einfach*2*KM_SATZ)} Fahrtkosten. Geschätzt, prüf den Wert einmal in Google Maps.`;
+  }catch{
+    F.streckeFehler=true;
+    F.streckeInfo="Die Strecke konnte nicht berechnet werden. Trag die Kilometer unten von Hand ein. Wenn du die App selbst hostest, brauchst du dafür im Reiter Abschluss einen API-Key.";
+  }
+  UI.laedt=""; zeichne();
+}
+
+async function ortGeaendert(){
+  const name=String(F.ziel||"").trim();
+  if(!name){ F.streckeInfo=""; zeichne(); return; }
+  const st=D.standorte.find(x=>x.name.toLowerCase()===name.toLowerCase());
+  if(st){
+    F.km=String(num(st.km)*2); F.merken=false; F.streckeFehler=false;
+    F.streckeInfo=`Gespeicherter Standort · ${num(st.km)*2} km hin und zurück · ${eur2(num(st.km)*2*KM_SATZ)} Fahrtkosten`;
+    zeichne(); return;
+  }
+  if(!D.basis.ort||num(F.km)>0){ zeichne(); return; }
+  await streckeRechnen();
+}
+
+function standortMerken(){
+  if(!F.merken) return;
+  const name=String(F.ziel||"").trim(), km=num(F.km);
+  if(!name||km<=0) return;
+  if(D.standorte.some(x=>x.name.toLowerCase()===name.toLowerCase())) return;
+  D.standorte.push({name,adresse:"",km:Math.round(km/2),geschaetzt:true,id:uid()});
+}
+
+async function bearbeiten(typ,eid){
+  const e=D[typ].find(x=>String(x.id)===String(eid)); if(!e) return;
+  const kopie=JSON.parse(JSON.stringify(e));
+  kopie.anhaenge=[];
+  for(const a of anh(e)){
+    let d=CACHE.get(a.id); if(d===undefined){ d=await dLesen(a.id); CACHE.set(a.id,d); }
+    kopie.anhaenge.push({id:a.id,name:a.name,typ:a.typ,data:d||""});
+  }
+  if(kopie.km!==undefined) kopie.km=String(kopie.km);
+  F=kopie; UI.editId=eid; UI.basisEdit=false;
+  UI.form={auftraege:"a",ausgaben:"b",standorte:"st",fahrten:"fz"}[typ];
+  zeichne(); window.scrollTo({top:0,behavior:"smooth"});
+}
+
+const VORLAGEN={
+  a:()=>({datum:heute(),kunde:"",art:"Hochzeit",ziel:"",rechnungsnr:"",honorar:"",km:"",stunden:"",uebernachtung:false,bezahlt:true,anhaenge:[],merken:true,streckeInfo:""}),
+  b:()=>({datum:heute(),was:"",kategorie:KATEGORIEN[0],betrag:"",anhaenge:[],hinweis:""}),
+  st:()=>({name:"",adresse:"",km:"",geschaetzt:false,hinweis:""}),
+  fz:()=>({datum:heute(),ziel:"",anlass:ANLAESSE[0],km:"",merken:true,streckeInfo:""})
+};
+
+/* ---------- Eingaben ---------- */
+document.addEventListener("input",e=>{
+  const f=e.target.dataset.f; if(!f) return;
+  if(f==="key"){UI.key=e.target.value;return;}
+  if(f==="syncrepo"){UI.syncrepo=e.target.value;return;}
+  if(f==="synctoken"){UI.synctoken=e.target.value;return;}
+  F[f]=e.target.type==="checkbox"?e.target.checked:e.target.value;
+  if(f==="ziel"){
+    const sb=document.querySelector('[data-akt="strecke"]');
+    if(sb) sb.disabled=!String(F.ziel||"").trim()||!D.basis.ort||UI.laedt==="km";
+  }
+  const v=document.getElementById("vorschau");
+  if(v){
+    if(UI.form==="a"){const p=pausch(F);
+      v.innerHTML=`Fahrtkosten <b>${eur2(p.km)}</b> · Verpflegung <b>${eur2(p.vp)}</b><br>Betriebsausgabe ohne Beleg: <b>${eur2(p.gesamt)}</b>`;}
+    else if(UI.form==="b") v.innerHTML=`Bei rund 32% Steuersatz kostet dich das effektiv <b>${eur2(num(F.betrag)*.68)}</b>`;
+    else if(UI.form==="st") v.innerHTML=`Hin und zurück: <b>${num(F.km)*2} km</b> · ${eur2(num(F.km)*2*KM_SATZ)} pro Fahrt`;
+    else if(UI.form==="fz") v.innerHTML=`Betriebsausgabe: <b>${eur2(num(F.km)*KM_SATZ)}</b>`;
+  }
+  const btn=document.querySelector(".breit.voll");
+  if(btn){
+    const ok=UI.form==="a"?String(F.kunde||"").trim()&&num(F.honorar)>0
+      :UI.form==="b"?String(F.was||"").trim()&&num(F.betrag)>0
+      :UI.form==="st"?String(F.name||"").trim()&&num(F.km)>0
+      :UI.form==="fz"?String(F.ziel||"").trim()&&num(F.km)>0
+      :String(F.ort||"").trim();
+    btn.disabled=!ok;
+  }
+});
+document.addEventListener("change",async e=>{
+  if(e.target.dataset.akt==="jahr"){UI.jahr=+e.target.value;zeichne();return;}
+  if(e.target.dataset.ort){ F.ziel=e.target.value; await ortGeaendert(); }
+});
+
+/* ---------- Dateiauswahl ---------- */
+document.getElementById("datei").addEventListener("change",async e=>{
+  const dateien=[...e.target.files]; e.target.value="";
+  if(!dateien.length) return;
+  F.anhaenge=F.anhaenge||[];
+  for(const f of dateien){
+    try{
+      if(f.type==="application/pdf") F.anhaenge.push({name:f.name,typ:"pdf",data:await alsDataUrl(f)});
+      else if(f.type.startsWith("image/")) F.anhaenge.push({name:f.name||"Foto.jpg",typ:"bild",data:await bildVerkleinern(f)});
+      else UI.meldung="Nur Bilder und PDFs werden unterstützt.";
+    }catch{ UI.meldung="Eine Datei konnte nicht gelesen werden."; }
+  }
+  F.hinweis=""; zeichne();
+});
+
+/* ---------- Aktionen ---------- */
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-akt]"); if(!b) return;
+  const akt=b.dataset.akt;
+  if(akt!=="lupe") UI.meldung="";
+
+  if(akt==="tab"){UI.tab=b.dataset.v;UI.form=null;UI.editId=null;UI.basisEdit=false;
+    if(b.dataset.v==="einstellungen")platzPruefen().then(zeichne);
+    zeichne();window.scrollTo({top:0,behavior:"smooth"});}
+  else if(akt==="form"){const v=b.dataset.v;UI.form=(UI.form===v&&!UI.editId)?null:v;UI.editId=null;UI.basisEdit=false;
+    F=UI.form?VORLAGEN[UI.form]():{};zeichne();}
+  else if(akt==="basisEdit"){UI.basisEdit=!UI.basisEdit;UI.form=null;F={ort:D.basis.ort||""};zeichne();}
+  else if(akt==="datei"){document.getElementById("datei").click();}
+  else if(akt==="anhWeg"){F.anhaenge.splice(+b.dataset.i,1);zeichne();}
+  else if(akt==="lupe"){UI.lupe=b.dataset.src;zeichne();}
+  else if(akt==="lupeZu"){UI.lupe=null;zeichne();}
+  else if(akt==="oeffnen"){pdfOeffnen(F.anhaenge[+b.dataset.i].data);}
+  else if(akt==="oeffnenId"){const d=await holeDatei(b.dataset.id,b.dataset.ext||"pdf"); if(d) pdfOeffnen(d); else {UI.meldung="Diese Datei ist auf diesem Gerät nicht verfügbar.";zeichne();}}
+
+  else if(akt==="auslesen"){
+    UI.laedt="ocr";zeichne();
+    try{
+      const a=F.anhaenge[0], teile=a.data.split(",");
+      const block=a.typ==="pdf"
+        ?{type:"document",source:{type:"base64",media_type:"application/pdf",data:teile[1]}}
+        :{type:"image",source:{type:"base64",media_type:teile[0].includes("png")?"image/png":"image/jpeg",data:teile[1]}};
+      const r=await claude([block,{type:"text",text:`Lies diesen Beleg oder diese Rechnung. Antworte ausschließlich mit JSON, ohne Backticks:
+{"datum":"YYYY-MM-DD oder null","was":"kurze Bezeichnung, Händler plus Gegenstand","betrag":<Gesamtbetrag als Zahl oder null>,"kategorie":"eine aus: ${KATEGORIEN.join(" | ")}"}`}]);
+      if(r.datum) F.datum=r.datum;
+      if(r.was) F.was=String(r.was).slice(0,90);
+      if(r.betrag!=null) F.betrag=String(r.betrag).replace(".",",");
+      if(r.kategorie&&KATEGORIEN.includes(r.kategorie)) F.kategorie=r.kategorie;
+      F.hinweis="Automatisch gelesen. Prüf Betrag und Datum kurz nach, bevor du sicherst.";
+    }catch{
+      F.hinweis="Auslesen nicht möglich. Trag die Werte von Hand ein. Falls du die App selbst hostest, brauchst du dafür im Abschluss einen API-Key.";
+    }
+    UI.laedt="";zeichne();
+  }
+
+  else if(akt==="neuBasis"){D.basis={ort:String(F.ort).trim()};UI.basisEdit=false;await sichern();zeichne();}
+  else if(akt==="neuAuftrag"||akt==="neuAusgabe"){
+    const typ=akt==="neuAuftrag"?"auftraege":"ausgaben";
+    if(typ==="auftraege") standortMerken();
+    const {anhaenge,hinweis,merken,streckeInfo,streckeFehler,...rest}=F;
+    const alt=UI.editId?anh(D[typ].find(x=>String(x.id)===String(UI.editId))||{}):[];
+    const liste=[];
+    for(const a of (anhaenge||[])){
+      if(a.id){ liste.push({id:a.id,name:a.name,typ:a.typ}); continue; }
+      const aid="f"+uid();
+      try{ await dSchreiben(aid,a.data); CACHE.set(aid,a.data);
+        liste.push({id:aid,name:a.name,typ:a.typ}); }
+      catch{ UI.meldung="Eine Datei konnte nicht gespeichert werden."; }
+    }
+    for(const a of alt){ if(!liste.some(n=>n.id===a.id)){ await dLoeschen(a.id); CACHE.delete(a.id); } }
+    if(UI.editId){ const i=D[typ].findIndex(x=>String(x.id)===String(UI.editId));
+      if(i>-1) D[typ][i]={...rest,id:D[typ][i].id,anhaenge:liste}; }
+    else D[typ].push({...rest,id:uid(),anhaenge:liste});
+    UI.form=null;UI.editId=null;await sichern();await platzPruefen();zeichne();
+  }
+  else if(akt==="neuFahrt"){
+    standortMerken();
+    const {merken,streckeInfo,streckeFehler,...rf}=F;
+    const e={...rf,km:num(F.km)};
+    if(UI.editId){ const i=D.fahrten.findIndex(x=>String(x.id)===String(UI.editId));
+      if(i>-1) D.fahrten[i]={...e,id:D.fahrten[i].id}; }
+    else D.fahrten.push({...e,id:uid()});
+    UI.form=null;UI.editId=null;await sichern();zeichne();
+  }
+  else if(akt==="neuStandort"){
+    const e={name:F.name,adresse:F.adresse,km:num(F.km),geschaetzt:!!F.geschaetzt};
+    if(UI.editId){ const i=D.standorte.findIndex(x=>String(x.id)===String(UI.editId));
+      if(i>-1) D.standorte[i]={...e,id:D.standorte[i].id}; }
+    else D.standorte.push({...e,id:uid()});
+    UI.form=null;UI.editId=null;await sichern();zeichne();
+  }
+  else if(akt==="syncVerbinden"){ await syncVerbinden(); }
+  else if(akt==="syncJetzt"){ await syncLaden(); if(syncStatus!=="fehler") await syncSenden(); zeichne(); }
+  else if(akt==="syncTrennen"){ SYNC={repo:"",token:"",sha:null}; UI.syncrepo="";UI.synctoken="";
+    await syncCfgSichern(); syncZeit=0; stand(""); UI.meldung="Verbindung getrennt. Die Daten bleiben auf diesem Gerät.";zeichne(); }
+  else if(akt==="strecke"){ await streckeRechnen(); }
+  else if(akt==="bearbeiten"){ await bearbeiten(b.dataset.typ,b.dataset.id); }
+  else if(akt==="bezahlt"){
+    const a=D.auftraege.find(x=>String(x.id)===b.dataset.id);
+    if(a){ a.bezahlt=!a.bezahlt; await sichern(); }
+    zeichne();
+  }
+  else if(akt==="weg"){
+    const t=b.dataset.typ, w=D[t].find(x=>String(x.id)===b.dataset.id);
+    if(w) for(const a of anh(w)){await dLoeschen(a.id);CACHE.delete(a.id);}
+    D[t]=D[t].filter(x=>String(x.id)!==b.dataset.id);
+    if(String(UI.editId)===b.dataset.id){UI.editId=null;UI.form=null;}
+    await sichern();zeichne();
+  }
+  else if(akt==="keySichern"){await speicher.schreiben(SKEY,UI.key.trim());UI.meldung="Key gesichert.";zeichne();}
+
+  else if(akt==="schaetzen"){
+    UI.laedt="km";zeichne();
+    try{
+      const r=await claude(`Wie viele Straßenkilometer sind es auf der üblichen Autoroute von "${D.basis.ort}" nach "${F.adresse||F.name}"? Antworte ausschließlich mit JSON, ohne Backticks: {"km": <zahl>}. Falls unbekannt: {"km": null}.`);
+      if(r.km==null) throw 0;
+      F.km=String(Math.round(r.km)); F.geschaetzt=true;
+      F.hinweis="Geschätzt, nicht gemessen. Prüf den Wert einmal in Google Maps und korrigier ihn. Danach steht er für alle künftigen Aufträge fest.";
+    }catch{ F.hinweis="Die Strecke konnte nicht ermittelt werden. Trag die Kilometer aus Google Maps von Hand ein."; }
+    UI.laedt="";zeichne();
+  }
+
+  else if(akt==="zip"){ UI.laedt="zip";zeichne(); await zipExport(); UI.laedt="";zeichne(); }
+  else if(akt==="csv") csvExport();
+  else if(akt==="backupKlein") lade(JSON.stringify(D,null,2),`steuerbuch-daten-${heute()}.json`,"application/json");
+  else if(akt==="backupGross"){
+    UI.laedt="bk";zeichne();
+    try{ const bilder=await dAlle();
+      lade(JSON.stringify({...D,bilder}),`steuerbuch-komplett-${heute()}.json`,"application/json"); }
+    catch{ UI.meldung="Die Komplettsicherung ist fehlgeschlagen."; }
+    UI.laedt="";zeichne();
+  }
+  else if(akt==="import") document.getElementById("importfeld").click();
+});
+
+function pdfOeffnen(dataUrl){
+  try{
+    const url=URL.createObjectURL(new Blob([dataUrlBytes(dataUrl)],{type:"application/pdf"}));
+    window.open(url,"_blank");
+    setTimeout(()=>URL.revokeObjectURL(url),20000);
+  }catch{ UI.meldung="Das PDF konnte nicht geöffnet werden."; zeichne(); }
+}
+
+document.getElementById("importfeld").addEventListener("change",e=>{
+  const f=e.target.files[0]; e.target.value=""; if(!f) return;
+  const r=new FileReader();
+  r.onload=async()=>{
+    try{
+      const p=JSON.parse(r.result);
+      const bilder=p.bilder||{}; delete p.bilder;
+      D={basis:{ort:""},standorte:[],auftraege:[],fahrten:[],ausgaben:[],...p};
+      D.basis={ort:"",...(p.basis||{})};
+      for(const [k,v] of Object.entries(bilder)){ await dSchreiben(k,v); CACHE.set(k,v); }
+      await sichern();
+      UI.meldung="Sicherung eingelesen"+(Object.keys(bilder).length?", inklusive aller Dateien.":".");
+      zeichne();
+    }catch{ UI.meldung="Die Datei konnte nicht gelesen werden."; zeichne(); }
+  };
+  r.readAsText(f);
+});
+
+function lade(inhalt,name,typ){
+  const blob=inhalt instanceof Blob?inhalt
+    :new Blob([typ==="text/csv"?"\uFEFF"+inhalt:inhalt],{type:typ+";charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),8000);
+}
+
+async function zipExport(){
+  const s=berechne(), dateien=[];
+  const sammeln=async(liste,ordner,titel)=>{
+    for(const e of liste){
+      const l=anh(e); let i=0;
+      for(const a of l){
+        i++;
+        let d=CACHE.get(a.id);
+        if(d===undefined||d===null){ d=await holeDatei(a.id,a.typ==="pdf"?"pdf":"jpg"); CACHE.set(a.id,d); }
+        if(!d) continue;
+        const ext=a.typ==="pdf"?"pdf":"jpg", nr=l.length>1?"_"+i:"";
+        dateien.push({name:`${ordner}/${e.datum}_${slug(titel(e))}${nr}.${ext}`,data:dataUrlBytes(d)});
+      }
+    }
+  };
+  await sammeln(s.auftraege,`Einnahmen ${UI.jahr}`,e=>(e.rechnungsnr?e.rechnungsnr+"_":"")+e.kunde);
+  await sammeln(s.ausgaben,`Ausgaben ${UI.jahr}`,e=>e.was);
+  if(!dateien.length){ UI.meldung="Für "+UI.jahr+" sind noch keine Dateien hinterlegt."; return; }
+  dateien.push({name:`Uebersicht ${UI.jahr}.csv`,data:new TextEncoder().encode("\uFEFF"+csvText())});
+  try{ lade(zipBauen(dateien),`steuerbuch-archiv-${UI.jahr}.zip`); }
+  catch{ UI.meldung="Das Archiv konnte nicht erstellt werden."; }
+}
+
+function csvText(){
+  const s=berechne();
+  const z=[["Typ","Datum","Bezeichnung","Kategorie","km","Betrag","Beleg","Notiz"]];
+  s.auftraege.forEach(a=>{
+    z.push(["Einnahme",a.datum,a.kunde+(a.rechnungsnr?" / RG "+a.rechnungsnr:""),a.art,"",num(a.honorar).toFixed(2).replace(".",","),anh(a).length?"Datei vorhanden":"KEINE RECHNUNG",a.bezahlt?"bezahlt":"offen"]);
+    const p=pausch(a);
+    if(p.vp>0) z.push(["Ausgabe",a.datum,"Verpflegung "+a.kunde,"Reisekosten","",p.vp.toFixed(2).replace(".",","),"Pauschale",a.uebernachtung?"mit Uebernachtung":"ueber 8 Stunden"]);
+  });
+  s.fahrten.forEach(f=>z.push(["Ausgabe",f.datum,"Fahrt "+f.ziel,"Reisekosten",String(f.km),(f.km*KM_SATZ).toFixed(2).replace(".",","),"Pauschale",f.anlass]));
+  s.ausgaben.forEach(a=>z.push(["Ausgabe",a.datum,a.was,a.kategorie,"",num(a.betrag).toFixed(2).replace(".",","),anh(a).length?"Datei vorhanden":"BELEG FEHLT",""]));
+  return z.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(";")).join("\n");
+}
+function csvExport(){ lade(csvText(),`steuerbuch-${UI.jahr}.csv`,"text/csv"); }
+
+/* ---------- Start ---------- */
+(async()=>{
+  const roh=await speicher.lesen(KEY);
+  if(roh){ try{ const p=JSON.parse(roh);
+    D={basis:{ort:""},standorte:[],auftraege:[],fahrten:[],ausgaben:[],...p};
+    D.basis={ort:"",...(p.basis||{})};
+    [...D.auftraege,...D.ausgaben].forEach(e=>{
+      if(!Array.isArray(e.anhaenge)) e.anhaenge=[];
+      if(e.bildId){ e.anhaenge.push({id:e.bildId,name:"Beleg.jpg",typ:"bild"}); delete e.bildId; }
+    });
+  }catch{} }
+  UI.key=(await speicher.lesen(SKEY))||"";
+  try{ const c=JSON.parse((await speicher.lesen(SYNCKEY))||"{}");
+    SYNC={repo:c.repo||"",token:c.token||"",sha:c.sha||null};
+    UI.syncrepo=SYNC.repo; UI.synctoken=SYNC.token; }catch{}
+  zeichne();
+  if(syncAn()) syncLaden();
+  window.addEventListener("focus",()=>{ if(syncAn()&&Date.now()-letztesLaden>30000) syncLaden(); });
+  platzPruefen().then(()=>{ if(UI.tab==="einstellungen") zeichne(); });
+  try{
+    const m={name:"Steuerbuch Steri.Chas",short_name:"Steuerbuch",start_url:".",display:"standalone",
+      background_color:"#D7E8E6",theme_color:"#D7E8E6",
+      icons:[{src:document.querySelector("link[rel=apple-touch-icon]").href,sizes:"180x180",type:"image/png"}]};
+    const l=document.createElement("link");l.rel="manifest";
+    l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:"application/json"}));
+    document.head.appendChild(l);
+  }catch{}
+})();
+</script>
+</body>
+</html>
